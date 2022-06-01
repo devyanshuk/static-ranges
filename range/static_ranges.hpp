@@ -8,6 +8,4 @@
 #include "views.hpp"
 #include "std.hpp"
 
-namespace static_views = static_ranges::views;
-
 #endif //__STATIC_RANGES_HPP__

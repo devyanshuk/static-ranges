@@ -8,9 +8,10 @@
 #include "range_traits.hpp"
 #include "concepts.hpp"
 
-#define COPY_ASSIGN_ERROR "Each element i in range_src must be copy assignable to the corresponding range_src"
-#define TRANSFORM_TWO_ERROR "f(e1I,e2I) must be copy-assignable to the I-th element of r3"
+
 #define TRANSFORM_ONE_ERROR "f(e1I) must be copy-assignable to the I-th element of r2"
+#define TRANSFORM_TWO_ERROR "f(e1I,e2I) must be copy-assignable to the I-th element of r3"
+#define COPY_ASSIGN_ERROR "Each element i in range_src must be copy assignable to the corresponding range_src"
 
 namespace static_ranges {
 
@@ -53,6 +54,9 @@ namespace static_ranges {
     constexpr void copy(RangeSrc && r1, RangeDest & r2) 
     {
         copy_impl<make_sequence<RangeSrc>>::assign(std::forward<RangeSrc>(r1), r2);
+        
+        // **** we could transform with identity mapping too. ****
+        //transform(std::forward<RangeSrc>(r1), r2, [](auto && v) { return v; });
     }
 
 

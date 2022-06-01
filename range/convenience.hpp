@@ -33,7 +33,7 @@ namespace static_ranges
     template<std::size_t I, typename Range>
         requires static_ranges::range<std::remove_cvref_t<Range>>
     decltype(auto) constexpr element(Range && t) {
-        static_assert(I < size_v<Range>,"Index out of bounds.");
+        static_assert(I < size_v<Range>, "Index out of bounds.");
         return range_nocvref<Range>::template get<I>(std::forward<Range>(t));
     }
 

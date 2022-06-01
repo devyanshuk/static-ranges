@@ -55,11 +55,7 @@ namespace static_ranges {
     template< template<typename> typename View, typename Range>
         requires std::is_base_of_v<view_base, View<Range>>
     struct range_traits<View<Range>> 
-        : std::integral_constant
-        <
-            std::size_t,
-            static_ranges::range_traits<std::remove_cvref_t<Range>>::value
-        >
+        : std::integral_constant<std::size_t, nocvref_range<Range>::value>
     {
         template<std::size_t I>
         static constexpr decltype(auto) get(View<Range> && t)

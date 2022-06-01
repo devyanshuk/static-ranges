@@ -6,15 +6,17 @@
 
 #include "view_objects.hpp"
 #include "range_traits.hpp"
+#include "convenience.hpp"
 #include "concepts.hpp"
 #include "helpers.hpp"
 #include "std.hpp"
 
+namespace static_views = static_ranges::views;
+
 namespace static_ranges {
 
-
     template<typename View, typename Func>
-    using transform_view_object = static_ranges::views::transform_view_object<View, Func>;
+    using transform_view_object = static_views::transform_view_object<View, Func>;
 
 
     /**
@@ -23,13 +25,17 @@ namespace static_ranges {
     * corresponding transformations to the ith element and return it.
     */
     template<std::size_t I, typename View>
-        requires std::is_base_of_v<static_ranges::views::transformable, std::remove_cvref_t<View>>
+        requires std::is_base_of_v<static_views::transformable, std::remove_cvref_t<View>>
     constexpr auto get_lazily(View && v) {
         return std::forward<View>(v).m_func(get_lazily<I>(std::forward<View>(v).m_view));
     }
 
+    /*
+    * Base case: if the static view object isn't a base of transformable struct, then retrieve
+    * the element of that static view to apply all the functors from the caller.
+    */
     template<std::size_t I, typename View>
-        requires (!std::is_base_of_v<static_ranges::views::transformable, std::remove_cvref_t<View>>)
+        requires (!std::is_base_of_v<static_views::transformable, std::remove_cvref_t<View>>)
     constexpr auto get_lazily(View && v) {
         return static_ranges::element<I>(std::forward<View>(v));
     }
@@ -76,6 +82,10 @@ namespace static_ranges {
             return std::move(t);
         }
 
+        /*
+        * returns a view object which behaves as a reference to the
+        * static range given as an argument.
+        */
         template<typename Range>
             requires range_but_not_view<std::remove_cvref_t<Range>>
         decltype(auto) all(Range && t) {
@@ -83,6 +93,15 @@ namespace static_ranges {
         }
 
 
+        /*
+        * return a static view containing the elements {0,1,...,N-1} of type T.
+        * T shall be an integral type
+        * 
+        * example:
+        * 
+        * auto iota_view = static_views::iota<int, 5>();
+        * std::cout << static_ranges::element<0>(iota_view); //0
+        */
         template<typename T, std::size_t N>
             requires std::is_integral_v<T>
         constexpr decltype(auto) iota() {
@@ -94,6 +113,18 @@ namespace static_ranges {
         }
 
 
+        /*
+        * returns a static view representing the values {0,1,...,N-1} in the following way:
+        * 1) The I-th element eI is an empty object such that the expression 
+        *    decltype(eI)::value is a constant expression with value I of type T
+        * 2) The expression eI.value will work too
+        * 
+        * T shall be an integral type
+        * 
+        * example:
+        * 
+        * std::cout << static_ranges::element<0>(static_views::static_iota<int, 6>()); //0
+        */
         template<typename T, std::size_t N>
             requires std::is_integral_v<T>
         constexpr auto static_iota() {
@@ -104,6 +135,15 @@ namespace static_ranges {
         }
 
 
+        /*
+        * Range adaptor closure object returned when a transformation is
+        * applied.
+        * 
+        * example:
+        * 
+        * auto v = static_views::transform([](auto && v) { return v + 1; });
+        * //decltype(v) -> range_adaptor_closure<Func>
+        */
         template<typename Func>
         struct range_adaptor_closure {
 
@@ -111,11 +151,20 @@ namespace static_ranges {
                 : m_func(std::forward<Func>(f))
             {}
 
+            /*
+            * Returns a static view that stores a reference to the static range
+            * proived in the function argument.
+            * The size of the static view will be the same as the static range given
+            * to it.
+            * Lazy evaluation is done, i.e. the eI element shall be retrieved and the
+            * f(eI) expression shall be evaluated when the corresponding element of 
+            * the returned static view is accessed.
+            */
             template<typename Range>
                 requires static_ranges::range<std::remove_cvref_t<Range>>
             auto operator()(Range && r) {
                 return transform_view_object(
-                    all(std::forward<Range>(r)), m_func);
+                    all(std::forward<Range>(r)), std::move(m_func));
             }
 
             Func m_func;

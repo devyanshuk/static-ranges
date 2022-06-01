@@ -25,7 +25,7 @@ namespace static_ranges {
         * 
         */
         template<typename Range>
-            requires range<Range>
+            requires static_ranges::range<Range>
         struct view_obj
             : public static_ranges::view_base 
         {
@@ -42,7 +42,7 @@ namespace static_ranges {
         * Used by static_views::iota<N. I>() and static_views::static_iota<N, I>()
         */
         template<typename Range>
-            requires range<Range>
+            requires static_ranges::range<Range>
         struct view_obj_iota : public static_ranges::view_base
         {
         public:
@@ -68,13 +68,13 @@ namespace static_ranges {
         * 
         */
         template< typename View, typename Func>
-            requires view<View>
+            requires static_ranges::view<View>
         struct transform_view_object 
             : public static_ranges::view_base, public transformable
         {
         public:
 
-            constexpr explicit transform_view_object(View view, Func func)
+            constexpr explicit transform_view_object(View && view, Func && func)
                 : m_view(std::forward<View>(view)),
                   m_func(std::forward<Func>(func))
             {}
