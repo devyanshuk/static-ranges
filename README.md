@@ -234,8 +234,10 @@ In general, static views do not store their elements; instead, they store refere
         ```
          returns a ```std::array<T,N>``` containing (possibly converted) copies of the elements of the static range ```r```
             - T must be copy-constructible from all the element types in ```r```
-            
+
+
 #### transform_view
+
 - ```static_ranges::view::operator|```
     - The pipeline operator on views: The expression ```r|c``` shall be equivalent to ```c(r)``` for a static range ```r``` and a range adaptor closure object (obtained, for instance, by calling ```static_ranges::view::transform```)
     
@@ -254,21 +256,23 @@ In general, static views do not store their elements; instead, they store refere
         returns a range adaptor closure object such that ```static_ranges::view::transform(r,f)``` is equivalent to both these expressions:
             - ```static_ranges::view::transform(f)(r)```
             - ```r | static_ranges::view::transform(f)```
-            
+
+
 #### transform
+
 - ```static_ranges::transform```
-        - Dynamic analog: ```std::ranges::transform```
-        - The expression
-        ```
+    - Dynamic analog: ```std::ranges::transform```
+    - The expression
+        ```C++
         static_ranges::transform(r1,r2,f);
         ```
         copies the value ```f(e1I)``` for every element ```e1I``` of the static range ```r1``` into the corresponding element ```e2I``` of the static range ```r2```
-                - The static ranges ```r1``` and ```r2``` must have the same number of elements
+        - The static ranges ```r1``` and ```r2``` must have the same number of elements
                 - ```f(e1I)``` must be copy-assignable to the ```I```-th element of ```r2```
-        - The statement
-        ```
+    - The expression
+        ```C++
             static_ranges::transform(r1,r2,r3,f);
         ```
         copies the value ```f(e1I,e2I)``` for every element ```e1I``` of the static range ```r1``` and the corresponding element ```e2I``` of the static range ```r2``` into the corresponding element ```e3I``` of the static range ```r3```
-            - The static ranges ```r1```, ```r2```, and ```r3``` must have the same number of elements
-            - ```f(e1I,e2I)``` must be copy-assignable to the ```I```-th element of ```r3```
+        - The static ranges ```r1```, ```r2```, and ```r3``` must have the same number of elements
+        - ```f(e1I,e2I)``` must be copy-assignable to the ```I```-th element of ```r3```
